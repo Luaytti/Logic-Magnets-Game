@@ -16,8 +16,8 @@ This project simulates the Logic Magnets puzzle game, with an AI component that 
 ## Running the Game
 To play manually, or allow the AI to solve the game with DFS or BFS, run:
 ```bash
-python game_logic.py  # Game logic
-python search_algorithms.py  # DFS and BFS solutions
+python main_game.py  # Game 
+python algorithms.py  # DFS and BFS 
 ```
 
 ## License
