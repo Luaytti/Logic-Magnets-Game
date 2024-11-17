@@ -1,4 +1,5 @@
 from collections import deque
+import heapq
 
 def valid_move(board, current_row, current_col, next_row, next_col):
     """Check if the next position is valid and empty"""
@@ -90,3 +91,32 @@ def solve_with_dfs(board):
                             stack.append((new_state, moves + [move]))
 
     return [] 
+
+def solve_with_ucs(board):
+    priority_queue = []
+    heapq.heappush(priority_queue, (0, board, []))
+    visited = set()
+
+    while priority_queue:
+        cost, current_state, moves = heapq.heappop(priority_queue)
+
+        if is_goal_state(current_state):
+            return moves
+
+        for row in range(len(board)):
+            for col in range(len(board[0])):
+                piece = current_state[row][col]
+                if piece in ('P', 'R'):
+                    valid_moves = get_valid_moves(current_state, row, col)
+                    for move in valid_moves:
+                        new_state = [row[:] for row in current_state]
+                        if piece == 'P':
+                            repulsion(new_state, row, col, move[0], move[1])
+                        elif piece == 'R':
+                            attraction(new_state, row, col, move[0], move[1])
+
+                        new_state_tuple = tuple(tuple(row) for row in new_state)
+                        if new_state_tuple not in visited:
+                            visited.add(new_state_tuple)
+                            heapq.heappush(priority_queue, (cost + 1, new_state, moves + [move]))
+    return []
