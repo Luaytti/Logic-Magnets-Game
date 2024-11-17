@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox, ttk
-from algorithms import solve_with_bfs, solve_with_dfs  
+from algorithms import solve_with_bfs, solve_with_dfs, solve_with_ucs
 
 class State:
     def __init__(self, board_size, init_board):
@@ -8,8 +8,6 @@ class State:
         self.board = init_board
         self.original_board = [row[:] for row in init_board]
         self.selected_piece = None
-        self.purple_magnet_pre_value = 'E'
-        self.red_magnet_pre_value = 'E'
 
     def reset(self):
         self.board = [row[:] for row in self.original_board]
@@ -18,7 +16,7 @@ class State:
     def is_winner(self):
         for row in self.board:
             for cell in row:
-                if cell == '*':  
+                if cell == 'E':
                     return False
         return True
 
@@ -62,27 +60,24 @@ class LogicMagnetsGame:
     def create_controls(self):
         control_frame = tk.Frame(self.root)
         control_frame.grid(row=0, column=0, padx=10, pady=10)
-
-        mode_label = tk.Label(control_frame, text="Mode:")
-        mode_label.grid(row=0, column=0, padx=5, pady=5, sticky="w")
-
+        tk.Label(control_frame, text="Mode:").grid(row=0, column=0, padx=5, pady=5, sticky="w")
         mode_dropdown = ttk.Combobox(control_frame, values=["user", "solver"], state="readonly")
         mode_dropdown.set(self.mode)
         mode_dropdown.grid(row=0, column=1, padx=5, pady=5, sticky="w")
         mode_dropdown.bind("<<ComboboxSelected>>", self.set_mode)
-
-        solve_button = tk.Button(control_frame, text="Solve", command=self.solve_game)
-        solve_button.grid(row=1, column=0, columnspan=2, pady=5)
+        tk.Label(control_frame, text="Algorithm:").grid(row=0, column=2, padx=5, pady=5, sticky="w")
+        self.algo_dropdown = ttk.Combobox(control_frame, values=["BFS", "DFS", "UCS"], state="readonly")
+        self.algo_dropdown.set("BFS")
+        self.algo_dropdown.grid(row=0, column=3, padx=5, pady=5, sticky="w")
+        tk.Button(control_frame, text="Solve", command=self.solve_game).grid(row=1, column=0, columnspan=4, pady=5)
 
     def create_grid(self):
         self.grid_frame = tk.Frame(self.root)
         self.grid_frame.grid(row=1, column=0, padx=10, pady=10)
-
         for row in range(self.state.board_size):
             button_row = []
             for col in range(self.state.board_size):
-                button = tk.Button(self.grid_frame, width=6, height=3,
-                                   command=lambda r=row, c=col: self.on_button_click(r, c))
+                button = tk.Button(self.grid_frame, width=6, height=3, command=lambda r=row, c=col: self.on_button_click(r, c))
                 button.grid(row=row, column=col)
                 button_row.append(button)
             self.grid_buttons.append(button_row)
@@ -90,12 +85,17 @@ class LogicMagnetsGame:
     def set_mode(self, event):
         self.mode = event.widget.get()
         self.selected_piece = None
+
     def solve_game(self):
         if self.mode == 'solver':
-            moves = solve_with_bfs(self.state.board)  
-            if not moves:
+            algorithm = self.algo_dropdown.get()
+            moves = []
+            if algorithm == "BFS":
+                moves = solve_with_bfs(self.state.board)
+            elif algorithm == "DFS":
                 moves = solve_with_dfs(self.state.board)
-
+            elif algorithm == "UCS":
+                moves = solve_with_ucs(self.state.board)
             if moves:
                 self.show_solution(moves)
             else:
@@ -106,7 +106,6 @@ class LogicMagnetsGame:
     def show_solution(self, moves):
         for move in moves:
             row, col = move
-            print(f"Suggested move: {move}")
             self.state.move_piece(self.selected_piece[0], self.selected_piece[1], row, col)
             self.update_grid()
 
@@ -143,14 +142,14 @@ class LogicMagnetsGame:
             return 'red'
         elif piece == 'G':
             return 'gray'
-        elif piece == '*': 
+        elif piece == '*':
             return 'white'
-        elif piece == 'E':  
+        elif piece == 'E':
             return 'light blue'
         else:
             return 'white'
 
-def main()
+def main():
     board_size = 5
     init_board = [
         ['*', 'G', '*', 'G', '*'],
@@ -159,8 +158,6 @@ def main()
         ['E', 'E', 'E', 'E', 'E'],
         ['E', 'E', 'E', 'E', 'E']
     ]
-
-    
     state = State(board_size, init_board)
     root = tk.Tk()
     game = LogicMagnetsGame(root, state)
