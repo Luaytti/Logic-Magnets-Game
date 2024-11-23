@@ -120,3 +120,47 @@ def solve_with_ucs(board):
                             visited.add(new_state_tuple)
                             heapq.heappush(priority_queue, (cost + 1, new_state, moves + [move]))
     return []
+def solve_with_hill_climbing(board):
+    def evaluate(state):
+        """Score the state based on the number of pieces in target positions."""
+        score = 0
+        for row in state:
+            score += row.count('*')
+        return score
+
+    current_state = [row[:] for row in board]
+    current_score = evaluate(current_state)
+    moves = []
+
+    while True:
+        best_score = current_score
+        best_move = None
+        best_state = None
+
+        for row in range(len(board)):
+            for col in range(len(board[0])):
+                piece = current_state[row][col]
+                if piece in ('P', 'R'):
+                    valid_moves = get_valid_moves(current_state, row, col)
+                    for move in valid_moves:
+                        new_state = [r[:] for r in current_state]
+                        if piece == 'P':
+                            repulsion(new_state, row, col, move[0], move[1])
+                        elif piece == 'R':
+                            attraction(new_state, row, col, move[0], move[1])
+
+                        new_score = evaluate(new_state)
+                        if new_score > best_score:
+                            best_score = new_score
+                            best_move = move
+                            best_state = new_state
+
+        if best_score > current_score:
+            current_score = best_score
+            current_state = best_state
+            moves.append(best_move)
+        else:
+            break
+
+    return moves
+
