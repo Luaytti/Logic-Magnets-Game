@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox, ttk
-from algorithms import solve_with_bfs, solve_with_dfs, solve_with_ucs
+from algorithms import solve_with_bfs, solve_with_dfs, solve_with_ucs, solve_with_hill_climbing
 
 class State:
     def __init__(self, board_size, init_board):
@@ -66,7 +66,7 @@ class LogicMagnetsGame:
         mode_dropdown.grid(row=0, column=1, padx=5, pady=5, sticky="w")
         mode_dropdown.bind("<<ComboboxSelected>>", self.set_mode)
         tk.Label(control_frame, text="Algorithm:").grid(row=0, column=2, padx=5, pady=5, sticky="w")
-        self.algo_dropdown = ttk.Combobox(control_frame, values=["BFS", "DFS", "UCS"], state="readonly")
+        self.algo_dropdown = ttk.Combobox(control_frame, values=["BFS", "DFS", "UCS", "Hill Climbing"], state="readonly")
         self.algo_dropdown.set("BFS")
         self.algo_dropdown.grid(row=0, column=3, padx=5, pady=5, sticky="w")
         tk.Button(control_frame, text="Solve", command=self.solve_game).grid(row=1, column=0, columnspan=4, pady=5)
@@ -96,6 +96,9 @@ class LogicMagnetsGame:
                 moves = solve_with_dfs(self.state.board)
             elif algorithm == "UCS":
                 moves = solve_with_ucs(self.state.board)
+            elif algorithm == "Hill Climbing":
+                moves = solve_with_hill_climbing(self.state.board)
+
             if moves:
                 self.show_solution(moves)
             else:
